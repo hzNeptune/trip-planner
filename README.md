@@ -37,8 +37,9 @@ An AI-powered travel assistant for exploring Seoul, built with React and Google 
 
 This repository is configured with GitHub Actions for automatic deployment.
 
-### 1. Configure Secrets
-To make the AI features work in the deployed app, you must add your API key to GitHub:
+### 1. Configure Secrets (Optional but Recommended)
+To make your deployed app work for everyone out of the box, you can add your API key to GitHub Secrets.
+**If you skip this, users will see a "Settings" button to input their own key.**
 
 1. Go to your repository **Settings** > **Secrets and variables** > **Actions**.
 2. Click **New repository secret**.
@@ -49,7 +50,13 @@ To make the AI features work in the deployed app, you must add your API key to G
 ### 2. Enable GitHub Pages
 1. Go to your repository **Settings** > **Pages**.
 2. Under "Build and deployment", select **GitHub Actions** as the source.
-3. The next time you push to the `main` branch, the `Deploy to GitHub Pages` workflow will run automatically.
+
+## 🗝️ Bring Your Own Key (BYOK)
+
+This app supports a **"Bring Your Own Key"** mode!
+- If you don't configure a global secret, or if a user wants to use their own quota, they can click the **Settings ⚙️** icon in the app.
+- The key is saved securely in the **browser's Local Storage**.
+- It is **never sent to any server** other than Google's API directly.
 
 ## 🛡️ Security Note
 

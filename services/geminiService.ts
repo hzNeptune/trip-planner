@@ -1,9 +1,23 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { FoodRecommendation, ActivityRecommendation, TranslationResult, DayPlan, TripProfile } from "../types";
+import { getApiKey } from "./storage";
 
-const apiKey = process.env.API_KEY || ""; 
+// Helper to get authenticated AI instance
+const getGenAI = () => {
+  // 1. Try to get key from Local Storage (User provided)
+  let key = getApiKey();
 
-const ai = new GoogleGenAI({ apiKey });
+  // 2. Fallback to Env Var (for easy local dev or if user deployed with secret)
+  if (!key) {
+    key = process.env.GEMINI_API_KEY || "";
+  }
+
+  if (!key) {
+    throw new Error("MISSING_API_KEY");
+  }
+
+  return new GoogleGenAI({ apiKey: key });
+};
 
 // Generic Expert Persona
 const getSystemInstruction = (destination: string = "当地") => `
@@ -20,9 +34,8 @@ export const getFoodRecommendations = async (
   foodType: string,
   destinationContext: string = "当地"
 ): Promise<FoodRecommendation[]> => {
-  if (!apiKey) throw new Error("API Key not set");
-
-  const model = "gemini-3-flash-preview";
+  const ai = getGenAI();
+  const model = "gemini-2.0-flash";
   const prompt = `我在${destinationContext}的【${location}】，想吃【${foodType}】。请推荐 3-4 家地道的店。`;
 
   try {
@@ -62,9 +75,8 @@ export const getActivityRecommendations = async (
   interest: string,
   destinationContext: string = "当地"
 ): Promise<ActivityRecommendation[]> => {
-  if (!apiKey) throw new Error("API Key not set");
-
-  const model = "gemini-3-flash-preview";
+  const ai = getGenAI();
+  const model = "gemini-2.0-flash";
   const prompt = `我在${destinationContext} ${location ? `的【${location}】附近` : ""}，我对【${interest}】感兴趣。请推荐 3 个好玩的地方或体验。`;
 
   try {
@@ -100,9 +112,8 @@ export const getActivityRecommendations = async (
 };
 
 export const translateToLocal = async (text: string, destinationContext: string = "国外"): Promise<TranslationResult> => {
-  if (!apiKey) throw new Error("API Key not set");
-
-  const model = "gemini-3-flash-preview";
+  const ai = getGenAI();
+  const model = "gemini-2.0-flash";
   const prompt = `目的地是：${destinationContext}。
   请把这句话翻译成地道的当地语言(生存用语)："${text}"。
   
@@ -140,10 +151,9 @@ export const translateToLocal = async (text: string, destinationContext: string 
 };
 
 export const generateCustomItinerary = async (profile: TripProfile): Promise<DayPlan[]> => {
-  if (!apiKey) throw new Error("API Key not set");
-
-  // Using pro-preview for complex reasoning
-  const model = "gemini-3-pro-preview";
+  const ai = getGenAI();
+  // Using flash for speed/cost balance, or pro if complex reasoning needed
+  const model = "gemini-2.0-flash";
 
   const prompt = `
   请为我生成一份详细的、JSON格式的【${profile.destination}】旅行行程表。
