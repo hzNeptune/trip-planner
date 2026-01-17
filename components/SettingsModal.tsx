@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Key, ExternalLink, Eraser } from 'lucide-react';
-import { saveApiKey, getApiKey, clearApiKey } from '../services/storage';
+import { X, Key, ExternalLink, Eraser, Globe } from 'lucide-react';
+import { saveApiKey, getApiKey, saveBaseUrl, getBaseUrl, clearSettings } from '../services/storage';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -9,14 +9,13 @@ interface SettingsModalProps {
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     const [apiKey, setApiKey] = useState('');
+    const [baseUrl, setBaseUrl] = useState('');
     const [savedKey, setSavedKey] = useState<string | null>(null);
 
     useEffect(() => {
         if (isOpen) {
-            const current = getApiKey();
-            setSavedKey(current);
-            // Don't auto-fill input for security/privacy visible feel, or do masked? 
-            // Let's just show status.
+            setSavedKey(getApiKey());
+            setBaseUrl(getBaseUrl() || '');
         }
     }, [isOpen]);
 
@@ -24,15 +23,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         if (apiKey.trim()) {
             saveApiKey(apiKey);
             setSavedKey(apiKey);
-            setApiKey(''); // clear input
-            onClose(); // Auto close on save? Or just show success? Let's auto close for convenience.
+        }
+        // Always save/update base URL (empty string means clear)
+        saveBaseUrl(baseUrl);
+
+        if (apiKey.trim() || savedKey) {
+            onClose();
         }
     };
 
     const handleClear = () => {
-        clearApiKey();
+        clearSettings();
         setSavedKey(null);
         setApiKey('');
+        setBaseUrl('');
     };
 
     if (!isOpen) return null;
@@ -50,7 +54,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                     </button>
                 </div>
 
-                <div className="p-6 space-y-4">
+                <div className="p-6 space-y-5">
+                    {/* API Key Input */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700 block">
                             Google Gemini API Key
@@ -62,8 +67,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                             onChange={(e) => setApiKey(e.target.value)}
                             className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm"
                         />
-                        <p className="text-xs text-slate-400">
-                            Key 仅保存在你的浏览器本地，不会上传到服务器。
+                    </div>
+
+                    {/* Base URL Input */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-700 flex items-center gap-1">
+                            <Globe size={14} />
+                            代理/转发地址 (选填)
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="例如: https://api.openai-proxy.com"
+                            value={baseUrl}
+                            onChange={(e) => setBaseUrl(e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm font-mono text-slate-600 placeholder:text-slate-300"
+                        />
+                        <p className="text-[10px] text-slate-400 leading-relaxed">
+                            如果你使用公益站或中转 API，请在此填入 Base URL。官方接口请留空。
                         </p>
                     </div>
 
@@ -75,14 +95,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                             rel="noopener noreferrer"
                             className="underline hover:text-blue-800"
                         >
-                            点击获取免费的 Gemini API Key
+                            没有 Key? 点击获取官方免费 Key
                         </a>
                     </div>
 
                     {savedKey && (
                         <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 px-3 py-2 rounded-lg border border-green-100">
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                            当前已设置 Key (结尾: ...{savedKey.slice(-4)})
+                            当前 Key 已激活 (结尾: ...{savedKey.slice(-4)})
                         </div>
                     )}
 
@@ -98,7 +118,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                         )}
                         <button
                             onClick={handleSave}
-                            disabled={!apiKey.trim()}
+                            disabled={!apiKey.trim() && !savedKey}
                             className="flex-1 bg-slate-900 text-white px-4 py-2.5 rounded-xl font-medium text-sm hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md active:scale-95"
                         >
                             保存设置

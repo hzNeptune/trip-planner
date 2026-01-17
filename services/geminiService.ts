@@ -1,13 +1,14 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { FoodRecommendation, ActivityRecommendation, TranslationResult, DayPlan, TripProfile } from "../types";
-import { getApiKey } from "./storage";
+
+import { getApiKey, getBaseUrl } from "./storage";
 
 // Helper to get authenticated AI instance
 const getGenAI = () => {
   // 1. Try to get key from Local Storage (User provided)
   let key = getApiKey();
 
-  // 2. Fallback to Env Var (for easy local dev or if user deployed with secret)
+  // 2. Fallback to Env Var
   if (!key) {
     key = process.env.GEMINI_API_KEY || "";
   }
@@ -16,7 +17,19 @@ const getGenAI = () => {
     throw new Error("MISSING_API_KEY");
   }
 
-  return new GoogleGenAI({ apiKey: key });
+  // 3. Get Custom Base URL (if any)
+  const baseUrl = getBaseUrl();
+
+  // Construct client options
+  const options: any = { apiKey: key };
+  if (baseUrl) {
+    // Note: The SDK might map this differently depending on version, 
+    // but typically '{ apiKey, baseUrl }' or passing rootUrl in config works for many proxies.
+    // Ideally we'd validte the SDK version capability, but let's try standard init.
+    options.baseUrl = baseUrl;
+  }
+
+  return new GoogleGenAI(options);
 };
 
 // Generic Expert Persona
