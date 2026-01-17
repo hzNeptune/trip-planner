@@ -46,7 +46,8 @@ const callOpenAI = async (
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
       ],
-      response_format: { type: "json_object" }
+      max_tokens: 4096,
+      temperature: 0.7
     })
   });
 
