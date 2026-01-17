@@ -1,9 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { FoodRecommendation, ActivityRecommendation, TranslationResult, DayPlan, TripProfile } from "../types";
 
-import { getApiKey, getBaseUrl } from "./storage";
-
-
+import { getApiKey, getBaseUrl, getModelName } from "./storage";
 
 // Helper to determine mode
 const isOpenIMode = () => {
@@ -15,23 +13,26 @@ const isOpenIMode = () => {
 const callOpenAI = async (
   systemPrompt: string,
   userPrompt: string,
-  model: string = "gpt-3.5-turbo" // Default fallback if not specified, though we might want to map gemini-1.5 to gpt-4o-mini
+  model: string = "gpt-3.5-turbo"
 ) => {
   const apiKey = getApiKey();
   const baseUrl = getBaseUrl();
 
   if (!baseUrl) {
-    throw new Error("请在设置中在'代理地址'栏填入API的中转地址 (例如 httsp://api.xyz.com)");
+    throw new Error("请在设置中在'代理地址'栏填入API的中转地址 (例如 https://api.xyz.com)");
   }
 
-  // Rough mapping of Gemini models to OpenAI equivalents for aggregators
-  // Many aggregators support 'gemini-pro' mapped to valid models, 
-  // but safer to use a common alias or pass the user's selection if we had one.
-  // For now, let's try to map "gemini-1.5-flash" -> "gpt-4o-mini" (fast/cheap) 
-  // and "gemini-2.0-flash" -> "gpt-4o" (smarter) to ensure good results from the aggregator.
-  // OR: Just keep the model name if the aggregator supports gemini pass-through. 
-  // Let's stick to "gpt-4o-mini" for general queries to be safe on quota.
-  const targetModel = model.includes("2.0") ? "gpt-4o" : "gpt-4o-mini";
+  // Model Selection Priority:
+  // 1. User Custom Model (Settings)
+  // 2. Default System Fallback
+  const customModel = getModelName();
+  let targetModel = customModel;
+
+  if (!targetModel) {
+    // Fallback Logic if no custom model set
+    // Try to map "gemini-1.5-flash" -> "gpt-4o-mini"
+    targetModel = model.includes("2.0") ? "gpt-4o" : "gpt-4o-mini";
+  }
 
   const response = await fetch(`${baseUrl}/v1/chat/completions`, {
     method: "POST",

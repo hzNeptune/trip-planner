@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Key, ExternalLink, Eraser, Globe } from 'lucide-react';
-import { saveApiKey, getApiKey, saveBaseUrl, getBaseUrl, clearSettings } from '../services/storage';
+import { X, Key, ExternalLink, Eraser, Globe, Cpu } from 'lucide-react';
+import { saveApiKey, getApiKey, saveBaseUrl, getBaseUrl, saveModelName, getModelName, clearSettings } from '../services/storage';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -10,12 +10,14 @@ interface SettingsModalProps {
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     const [apiKey, setApiKey] = useState('');
     const [baseUrl, setBaseUrl] = useState('');
+    const [modelName, setModelName] = useState('');
     const [savedKey, setSavedKey] = useState<string | null>(null);
 
     useEffect(() => {
         if (isOpen) {
             setSavedKey(getApiKey());
             setBaseUrl(getBaseUrl() || '');
+            setModelName(getModelName() || '');
         }
     }, [isOpen]);
 
@@ -24,8 +26,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             saveApiKey(apiKey);
             setSavedKey(apiKey);
         }
-        // Always save/update base URL (empty string means clear)
+        // Always save/update base URL and model name
         saveBaseUrl(baseUrl);
+        saveModelName(modelName);
 
         if (apiKey.trim() || savedKey) {
             onClose();
@@ -37,6 +40,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         setSavedKey(null);
         setApiKey('');
         setBaseUrl('');
+        setModelName('');
     };
 
     if (!isOpen) return null;
@@ -83,7 +87,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                             className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm font-mono text-slate-600 placeholder:text-slate-300"
                         />
                         <p className="text-[10px] text-slate-400 leading-relaxed">
-                            如果你使用公益站或中转 API，请在此填入 Base URL。官方接口请留空。
+                            如使用公益站，请填入 Base URL (后缀无需 /v1)
+                        </p>
+                    </div>
+
+                    {/* Model Name Input */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-700 flex items-center gap-1">
+                            <Cpu size={14} />
+                            自定义模型名称 (选填)
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="默认: gpt-3.5-turbo"
+                            value={modelName}
+                            onChange={(e) => setModelName(e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm font-mono text-slate-600 placeholder:text-slate-300"
+                        />
+                        <p className="text-[10px] text-slate-400 leading-relaxed">
+                            请手动填入公益站支持的模型名 (如 gemini-2.5-pro, deepseek-v3)
                         </p>
                     </div>
 
