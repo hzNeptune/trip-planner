@@ -67,7 +67,8 @@ const App: React.FC = () => {
       if (error?.message === 'MISSING_API_KEY') {
         setShowSettings(true);
       } else {
-        alert("生成行程失败，请检查网络或重试。");
+        // Show exact error for debugging
+        alert(`生成行程失败: ${error.toString()}`);
       }
     } finally {
       setIsLoading(false);

@@ -76,7 +76,7 @@ export const getActivityRecommendations = async (
   destinationContext: string = "当地"
 ): Promise<ActivityRecommendation[]> => {
   const ai = getGenAI();
-  const model = "gemini-2.0-flash";
+  const model = "gemini-1.5-flash";
   const prompt = `我在${destinationContext} ${location ? `的【${location}】附近` : ""}，我对【${interest}】感兴趣。请推荐 3 个好玩的地方或体验。`;
 
   try {
@@ -113,7 +113,7 @@ export const getActivityRecommendations = async (
 
 export const translateToLocal = async (text: string, destinationContext: string = "国外"): Promise<TranslationResult> => {
   const ai = getGenAI();
-  const model = "gemini-2.0-flash";
+  const model = "gemini-1.5-flash";
   const prompt = `目的地是：${destinationContext}。
   请把这句话翻译成地道的当地语言(生存用语)："${text}"。
   
