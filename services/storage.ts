@@ -47,3 +47,7 @@ export const clearSettings = () => {
     localStorage.removeItem(STORAGE_KEYS.BASE_URL);
     localStorage.removeItem(STORAGE_KEYS.MODEL_NAME);
 };
+
+export const hasApiKey = (): boolean => {
+    return !!getApiKey();
+};
