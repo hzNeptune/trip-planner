@@ -1,0 +1,5 @@
+{
+  "name": "Seoul Trip Genius",
+  "description": "A smart travel assistant for Seoul featuring an interactive itinerary, AI-powered food radar and translator using Gemini, and a travel checklist.",
+  "requestFramePermissions": []
+}
